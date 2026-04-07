@@ -3,4 +3,4 @@
 from workweek.client import WorkWeekClient, WorkWeekAPIError
 
 __all__ = ["WorkWeekClient", "WorkWeekAPIError"]
-__version__ = "0.2.0"
+__version__ = "0.2.1"

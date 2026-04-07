@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-04-07
+
+### Changed
+- Python version floor relaxed from `>=3.11` to `>=3.10`. The SDK does not use
+  any 3.11-only features and the relaxation lets it install in shared 3.10
+  development environments.
+- Added `Programming Language :: Python :: 3.10` to classifiers.
+
 ## [0.2.0] — 2026-04-07
 
 ### Changed
