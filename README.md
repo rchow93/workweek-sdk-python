@@ -10,13 +10,13 @@ a thin, dependency-light HTTP client. Single runtime dependency: `httpx`.
 From git (until published to PyPI):
 
 ```bash
-pip install "workweek @ git+https://github.com/workweek/workweek-sdk-python.git@v0.2.1"
+pip install "workweek @ git+https://github.com/rchow93/workweek-sdk-python.git@v0.2.2"
 ```
 
 For local development:
 
 ```bash
-git clone https://github.com/workweek/workweek-sdk-python.git
+git clone https://github.com/rchow93/workweek-sdk-python.git
 cd workweek-sdk-python
 pip install -e .
 ```
@@ -94,5 +94,5 @@ Apache License 2.0 — see [LICENSE](LICENSE).
 Alpha. API may change before 1.0. Pin to a specific version in production:
 
 ```bash
-pip install "workweek @ git+https://github.com/workweek/workweek-sdk-python.git@v0.2.1"
+pip install "workweek @ git+https://github.com/rchow93/workweek-sdk-python.git@v0.2.2"
 ```

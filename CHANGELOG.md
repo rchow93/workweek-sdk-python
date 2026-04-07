@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] — 2026-04-07
+
+### Changed
+- Repository URLs in `README.md` and `pyproject.toml` updated to point at the
+  actual GitHub home: `github.com/rchow93/workweek-sdk-python`. No code changes.
+
 ## [0.2.1] — 2026-04-07
 
 ### Changed
