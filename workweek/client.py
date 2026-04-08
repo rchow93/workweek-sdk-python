@@ -12,6 +12,7 @@ from workweek.knowledge import KnowledgeModule
 from workweek.chat import ChatModule
 from workweek.teams import TeamsModule
 from workweek.execution import ExecutionModule
+from workweek.places import PlacesModule
 
 
 class WorkWeekAPIError(Exception):
@@ -59,6 +60,7 @@ class WorkWeekClient:
         self.chat = ChatModule(self)
         self.teams = TeamsModule(self)
         self.execution = ExecutionModule(self)
+        self.places = PlacesModule(self)  # TD-107b — Google Places via Tier 3 BYOK
 
     def _request(self, method: str, path: str, **kwargs) -> dict:
         """Make an authenticated request and return JSON response."""
