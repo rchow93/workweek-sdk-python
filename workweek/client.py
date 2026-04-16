@@ -45,10 +45,21 @@ class WorkWeekClient:
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
         self._timeout = timeout
+        # TD-125: chat streams (chat.stream, chat.with_team) can run well
+        # past 30s for multi-tool turns. Give streaming endpoints a
+        # longer read timeout; short connect timeout keeps cold-start
+        # failure detection quick. Non-stream requests still use the
+        # caller's `timeout` value via per-request overrides in modules.
+        stream_timeout = httpx.Timeout(
+            connect=10.0,
+            read=120.0,
+            write=timeout,
+            pool=timeout,
+        )
         self._http = httpx.Client(
             base_url=self._base_url,
             headers={"X-API-Key": api_key},
-            timeout=timeout,
+            timeout=stream_timeout,
         )
 
         # Module accessors
