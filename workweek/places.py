@@ -1,20 +1,7 @@
-"""Places module — Google Places proxy via the WorkWeek SDK gateway.
+"""Places module — Google Places via the WorkWeek SDK gateway.
 
-Routes through /api/v1/sdk/places/* which resolves the org's Google API key
-from the platform's per-org BYOK entitlements (see the WorkWeek Secrets &
-BYOK Architecture doc — Tier 3 pattern). The SDK caller never sees or
-manages the Google API key; the tenant's platform admin seeds the
-entitlement once per org via the Settings UI or the admin API.
-
-Zero-config for SDK callers: if you have a tenant API key and your org has
-a ``google_places`` entitlement, these methods just work. If the entitlement
-is missing, the methods return ``{"found": False, "reason": "not_configured"}``
-instead of raising — frontends can hide the UI section gracefully.
-
-Three methods:
-    client.places.search(name, lat, lon)      → top match by business name
-    client.places.details(place_id)           → reviews + website + hours
-    client.places.streetview(lat, lon)        → Google Maps pano deep-link URL
+Calls /api/v1/sdk/places/* endpoints (Widget path — structured, no LLM).
+Auth via X-API-Key. Google Places BYOK key resolved at gateway.
 """
 
 from __future__ import annotations
@@ -25,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class PlacesModule:
-    def __init__(self, client: WorkWeekClient):
+    def __init__(self, client: "WorkWeekClient"):
         self._client = client
 
     def search(self, name: str, lat: float, lon: float) -> dict:
