@@ -1,24 +1,13 @@
 # WorkWeek Python SDK
 
-Official Python SDK for the [WorkWeek](https://workweek.io) platform.
+Official Python SDK for the [WorkWeek AI Marketplace](https://workxspeed.com) — composable AI services with built-in commerce.
 
-Embed WorkWeek's data, agents, and chat capabilities into your own Python apps with
-a thin, dependency-light HTTP client. Single runtime dependency: `httpx`.
+Query data with natural language, stream conversational AI, upload files, run deep research, and integrate 1,300+ AI tools — all through one SDK.
 
 ## Install
 
-From git (until published to PyPI):
-
 ```bash
-pip install "workweek @ git+https://github.com/rchow93/workweek-sdk-python.git@v0.2.2"
-```
-
-For local development:
-
-```bash
-git clone https://github.com/rchow93/workweek-sdk-python.git
-cd workweek-sdk-python
-pip install -e .
+pip install https://github.com/rchow93/workweek-sdk-python/releases/download/v0.7.0/workweek-0.7.0-py3-none-any.whl
 ```
 
 ## Quickstart
@@ -28,57 +17,62 @@ from workweek import WorkWeekClient
 
 client = WorkWeekClient(
     base_url="https://gw.askvai.com",
-    api_key="wk_rpt_...",  # Get from Settings → API Keys in the WorkWeek portal
+    api_key="wk_rpt_...",
 )
 
-# Query an Iceberg dataset
-result = client.data.query(
-    dataset="sf_food_trucks_permits",
-    sql="SELECT COUNT(*) AS n FROM tbl WHERE status = 'APPROVED'",
-)
-print(result["rows"])  # → [{"n": 163}]
+# Ask questions about your data (NL→SQL)
+result = client.data.ask("How many active users this month?", dataset="my_dataset")
 
-# Stream a chat message (v0.2.0+)
-for event in client.chat.stream("How many food trucks are active in SF?"):
+# Upload a file to your data warehouse (no S3 access needed)
+client.data.upload("my_dataset", "/path/to/data.csv")
+
+# Stream a chat message with tool calling
+for event in client.chat.stream("What are the top food trucks in SF?"):
     if event.type == "token":
         print(event.content, end="", flush=True)
+
+# Team-scoped chat with data tools
+for event in client.chat.with_team(team_id="uuid", message="Show candidates above 8"):
+    if event.type == "token":
+        print(event.content, end="", flush=True)
+
+# Deep research with citations
+result = client.execution.run_research(
+    query="Market opportunity for AI recruiting tools",
+    template_id="market_analysis",
+)
 ```
+
+## Modules
+
+| Module | Purpose |
+|--------|---------|
+| `client.data` | Query datasets (SQL + NL→SQL), upload files, list datasets, export dashboards |
+| `client.chat` | Conversational AI with tool calling, SSE streaming, team-scoped chat |
+| `client.execution` | Run queries, deep research, track executions |
+| `client.knowledge` | Knowledge collection search, document management |
+| `client.places` | Google Places search, details, street view (BYOK) |
+| `client.apps` | App config, page data, dashboard management |
+| `client.agents` | Saved agent CRUD |
+| `client.teams` | Team listing and management |
+| `client.analysis` | BACI and statistical analysis |
 
 ## Authentication
 
-All requests use API key authentication via the `X-API-Key` header. Create a key
-in the WorkWeek portal under **Settings → API Keys**. Pass it to `WorkWeekClient`:
+All requests use API key authentication via the `X-API-Key` header:
 
 ```python
 client = WorkWeekClient(base_url="https://gw.askvai.com", api_key="wk_rpt_...")
 ```
 
-The org and user context are derived from the API key — never pass `org_id` from
-the client.
+Org and user context are derived from the key — never pass `org_id` from the client.
 
-## Modules
+## Two SDKs
 
-| Module | Purpose |
-|---|---|
-| `client.data` | Query Iceberg datasets via SQL, list available datasets, inspect schemas |
-| `client.chat` | Conversational AI with tool-calling and streaming responses |
-| `client.apps` | Tenant app config, page data, dashboard frontend management |
-| `client.agents` | Saved agent CRUD |
-| `client.teams` | Team listing |
-| `client.knowledge` | Knowledge collection search |
-| `client.analysis` | BACI and statistical analysis |
-| `client.execution` | Submit and track agent executions |
-
-## Error Handling
-
-```python
-from workweek import WorkWeekAPIError
-
-try:
-    result = client.data.query(dataset="missing", sql="SELECT 1")
-except WorkWeekAPIError as e:
-    print(f"HTTP {e.status_code}: {e.message}")
-```
+| Package | Purpose | Install |
+|---------|---------|---------|
+| **workweek** | Consume AI services (data, chat, research) | [v0.7.0 wheel](https://github.com/rchow93/workweek-sdk-python/releases/download/v0.7.0/workweek-0.7.0-py3-none-any.whl) |
+| **workweek-switch** | Provide capabilities to the marketplace | [v0.3.0 wheel](https://github.com/rchow93/workweek-sdk-python/releases/download/v0.5.0/workweek_switch-0.3.0-py3-none-any.whl) |
 
 ## Requirements
 
@@ -87,12 +81,4 @@ except WorkWeekAPIError as e:
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
-
-## Status
-
-Alpha. API may change before 1.0. Pin to a specific version in production:
-
-```bash
-pip install "workweek @ git+https://github.com/rchow93/workweek-sdk-python.git@v0.2.2"
-```
+Apache License 2.0
