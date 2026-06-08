@@ -1,8 +1,7 @@
 """Data module — query Iceberg datasets via the WorkWeek SDK gateway.
 
-All methods hit /api/v1/sdk/* endpoints, which derive org_id from the API key
-and validate that SQL is SELECT-only. Use 'tbl' as the table reference in your
-SQL — every dataset is exposed under that name.
+Calls /api/v1/sdk/* endpoints (Widget path — structured, no LLM).
+Auth via X-API-Key. BYOK + grants enforced at gateway.
 """
 
 from __future__ import annotations
@@ -13,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class DataModule:
-    def __init__(self, client: WorkWeekClient):
+    def __init__(self, client: "WorkWeekClient"):
         self._client = client
 
     def query(
@@ -27,22 +26,10 @@ class DataModule:
         Args:
             dataset: Dataset name (e.g. ``"sf_food_trucks_permits"``).
             sql: DuckDB SELECT query. Use ``tbl`` as the table reference.
-                Only SELECT statements are permitted; INSERT/UPDATE/DELETE/
-                DROP/ALTER/etc. are rejected with HTTP 422.
             limit: Optional row cap (1-500, defaults to 100 server-side).
 
         Returns:
             ``{"dataset": str, "row_count": int, "columns": [str], "rows": [dict]}``
-
-        Example::
-
-            result = client.data.query(
-                dataset="sf_food_trucks_permits",
-                sql="SELECT facilitytype, COUNT(*) AS n FROM tbl "
-                    "WHERE status = 'APPROVED' GROUP BY facilitytype",
-            )
-            for row in result["rows"]:
-                print(row)
         """
         payload: dict = {"dataset": dataset, "sql": sql}
         if limit is not None:
@@ -58,7 +45,7 @@ class DataModule:
         return self._client.get("/api/v1/sdk/datasets")
 
     def get_schema(self, dataset: str) -> dict:
-        """Get the column schema for a dataset by sampling its first row.
+        """Get the column schema for a dataset.
 
         Args:
             dataset: Dataset name (e.g. ``"sf_food_trucks_permits"``).
@@ -67,3 +54,61 @@ class DataModule:
             ``{"dataset": str, "columns": [str], "sample": dict | None}``
         """
         return self._client.get(f"/api/v1/sdk/datasets/{dataset}/schema")
+
+    def ask(self, question: str, dataset: str, limit: int = 100) -> dict:
+        """NL→SQL — ask a natural language question against a dataset.
+
+        Args:
+            question: Natural language question (e.g. "How many approved food trucks?").
+            dataset: Dataset name to query.
+            limit: Max rows to return (default 100).
+
+        Returns:
+            ``{"dataset": str, "question": str, "sql": str, "columns": [str],
+              "rows": [dict], "row_count": int, "explanation": str}``
+        """
+        return self._client.post(
+            f"/api/v1/sdk/datasets/{dataset}/ask",
+            json={"question": question, "limit": limit},
+        )
+
+    def list_dashboards(self) -> dict:
+        """List dashboards visible to the API key's organization.
+
+        Returns:
+            ``{"count": int, "dashboards": [{"id": int, "name": str, ...}]}``
+        """
+        return self._client.get("/api/v1/sdk/dashboards")
+
+    def export_dashboard(self, dashboard_id: int, format: str = "json") -> dict:
+        """Export a dashboard as JSON or CSV.
+
+        Args:
+            dashboard_id: Dashboard ID to export.
+            format: Export format — "json" or "csv".
+
+        Returns:
+            Dashboard data in the requested format.
+        """
+        return self._client.get(
+            f"/api/v1/sdk/dashboards/{dashboard_id}/export",
+            params={"format": format},
+        )
+
+    def ingest(self, dataset: str, s3_path: str, format: str = "parquet") -> dict:
+        """Ingest data from S3 into an Iceberg dataset.
+
+        Upload your data to S3 first, then call this to trigger ingestion.
+
+        Args:
+            dataset: Target dataset name.
+            s3_path: S3 path to the source file (e.g. "s3://my-bucket/data.parquet").
+            format: Source format — "parquet" or "csv".
+
+        Returns:
+            Ingestion job status.
+        """
+        return self._client.post(
+            "/api/v1/sdk/ingest",
+            json={"dataset": dataset, "s3_path": s3_path, "format": format},
+        )

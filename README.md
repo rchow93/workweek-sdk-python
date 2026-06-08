@@ -43,6 +43,16 @@ result = client.execution.run_research(
 )
 ```
 
+## Authentication
+
+All requests use API key authentication via the `X-API-Key` header:
+
+```python
+client = WorkWeekClient(base_url="https://gw.askvai.com", api_key="wk_rpt_...")
+```
+
+Org and user context are derived from the key — never pass `org_id` from the client.
+
 ## Modules
 
 | Module | Purpose |
@@ -56,16 +66,6 @@ result = client.execution.run_research(
 | `client.agents` | Saved agent CRUD |
 | `client.teams` | Team listing and management |
 | `client.analysis` | BACI and statistical analysis |
-
-## Authentication
-
-All requests use API key authentication via the `X-API-Key` header:
-
-```python
-client = WorkWeekClient(base_url="https://gw.askvai.com", api_key="wk_rpt_...")
-```
-
-Org and user context are derived from the key — never pass `org_id` from the client.
 
 ## Two SDKs
 

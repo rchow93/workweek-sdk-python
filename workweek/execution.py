@@ -1,4 +1,4 @@
-"""Execution module — run queries and track executions."""
+"""Execution module — run queries, deep research, and track executions."""
 
 from __future__ import annotations
 import time
@@ -28,9 +28,7 @@ class ExecutionModule:
             team_id: Team ID to scope the execution to.
             path_type: Execution path — "crew", "single", "architect", "deep_research", "chat".
             template_id: Research template ID (e.g. "candidate_dossier", "market_analysis").
-                Shorthand for execution_metadata={"template_id": ...}.
             execution_metadata: Additional metadata passed to the execution engine.
-                For deep_research: template_id, max_steps, coaching_notes, etc.
             custom_instructions: Free-form instructions injected into agent prompts.
 
         Returns:
@@ -44,7 +42,6 @@ class ExecutionModule:
         if custom_instructions:
             payload["custom_instructions"] = custom_instructions
 
-        # Build execution_metadata — merge template_id shorthand with explicit metadata
         meta = dict(execution_metadata or {})
         if template_id:
             meta["template_id"] = template_id
@@ -60,22 +57,23 @@ class ExecutionModule:
         team_id: Optional[str] = None,
         max_steps: Optional[int] = None,
         custom_instructions: Optional[str] = None,
+        execution_metadata: Optional[dict] = None,
     ) -> dict:
-        """Submit a deep research query. Convenience wrapper around run_query().
+        """Submit a deep research query.
 
         Args:
-            query: The research question or candidate to investigate.
+            query: The research question or subject to investigate.
             template_id: Research template — "candidate_dossier", "market_analysis",
-                "competitive_landscape", "technical_deep_dive", "financial_analysis",
-                "safety_report", "quick_lookup".
+                "competitive_landscape", "technical_deep_dive", etc.
             team_id: Team ID to scope the execution to.
             max_steps: Override the template's default step budget (10-150).
             custom_instructions: Additional guidance for the research engine.
+            execution_metadata: Additional metadata merged with template_id + max_steps.
 
         Returns:
             dict with execution_id, status, message.
         """
-        meta: dict = {}
+        meta: dict = dict(execution_metadata or {})
         if template_id:
             meta["template_id"] = template_id
         if max_steps is not None:

@@ -98,6 +98,18 @@ class WorkWeekClient:
     def delete(self, path: str, **kwargs) -> dict:
         return self._request("DELETE", path, **kwargs)
 
+    def get_bytes(self, path: str, **kwargs) -> tuple[bytes, str]:
+        """GET a binary response (e.g. DOCX export). Returns (body, content_type)."""
+        resp = self._http.get(path, **kwargs)
+        if resp.status_code >= 400:
+            try:
+                detail = resp.json().get("detail", resp.text)
+            except Exception:
+                detail = resp.text[:500]
+            raise WorkWeekAPIError(resp.status_code, detail)
+        content_type = resp.headers.get("content-type", "application/octet-stream")
+        return resp.content, content_type
+
     def close(self):
         self._http.close()
 
